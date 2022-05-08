@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Viet Le&#39;s Blog</title>
+    <title>Viet Le&#39;s Tech Blog</title>
     <link>https://vietmle.com/</link>
-    <description>Recent content on Viet Le&#39;s Blog</description>
+    <description>Recent content on Viet Le&#39;s Tech Blog</description>
     <image>
       <url>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
       <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
@@ -26,8 +26,9 @@
 </ul>
 <h2 id="why-i-start-this-blog">Why I start this blog?</h2>
 <p>As a non-CS degree person, I find it overwhelmed when self-studying to become a software engineer. I was lucky enough to be guided by my senior, since then my studying process is much easier.</p>
-<p>As a result, I start this blog to share my coding journey and hope some of my articles help you become better at coding as well.</p>
-<p>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</p>
+<p>As a result, I start this blog to share my coding journey and hope some of my articles help you in some ways as well.</p>
+<p>Moreover, through this blog, I also hope that I can connect with and learn from new like-minded friends like you.</p>
+<p><em>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</em></p>
 ]]></content:encoded>
     </item>
     
