@@ -2,21 +2,33 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Viet Le&#39;s Blog</title>
-    <link>https://leminhviett.github.io/</link>
+    <link>https://vietmle.com/</link>
     <description>Recent content on Viet Le&#39;s Blog</description>
     <image>
-      <url>https://leminhviett.github.io/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
-      <link>https://leminhviett.github.io/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
+      <url>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</url>
+      <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 06 May 2022 14:52:19 +0800</lastBuildDate><atom:link href="https://leminhviett.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 06 May 2022 14:52:19 +0800</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>About me</title>
-      <link>https://leminhviett.github.io/posts/about_me/</link>
+      <link>https://vietmle.com/posts/about_me/</link>
       <pubDate>Fri, 06 May 2022 14:52:19 +0800</pubDate>
       
-      <guid>https://leminhviett.github.io/posts/about_me/</guid>
+      <guid>https://vietmle.com/posts/about_me/</guid>
       <description>About me &amp;amp; my blog</description>
+      <content:encoded><![CDATA[<h2 id="who-am-i">Who am I?</h2>
+<p>Hi there 👋 . I am Viet-Minh Le (<a href="https://twitter.com/vietmle_">@vietmle_</a>).</p>
+<ul>
+<li>🎓  Information Engineering &amp; Media &lsquo;22 @ <a href="https://www.ntu.edu.sg/">NTU</a></li>
+<li>💼  Backend Engineer @ <a href="https://shopee.sg/">ShopeeSG</a></li>
+<li>🧑🏻‍💻 Tech stacks: <code>.py</code>, <code>.go</code>, <code>.js</code> , and some more &hellip;</li>
+</ul>
+<h2 id="why-i-start-this-blog">Why I start this blog?</h2>
+<p>As a non-CS degree person, I find it overwhelmed when self-studying to become a software engineer. I was lucky enough to be guided by my senior, since then my studying process is much easier.</p>
+<p>As a result, I start this blog to share my coding journey and hope some of my articles help you become better at coding as well.</p>
+<p>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</p>
+]]></content:encoded>
     </item>
     
     
