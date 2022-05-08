@@ -2,16 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://leminhviett.github.io/posts/</loc>
-    <lastmod>2022-05-08T10:15:59+08:00</lastmod>
+    <loc>https://leminhviett.github.io/posts/about_me/</loc>
+    <lastmod>2022-05-06T14:52:19+08:00</lastmod>
   </url><url>
-    <loc>https://leminhviett.github.io/posts/test_wf/</loc>
-    <lastmod>2022-05-08T10:15:59+08:00</lastmod>
+    <loc>https://leminhviett.github.io/posts/</loc>
+    <lastmod>2022-05-06T14:52:19+08:00</lastmod>
   </url><url>
     <loc>https://leminhviett.github.io/</loc>
-    <lastmod>2022-05-08T10:15:59+08:00</lastmod>
-  </url><url>
-    <loc>https://leminhviett.github.io/posts/about_me/</loc>
     <lastmod>2022-05-06T14:52:19+08:00</lastmod>
   </url><url>
     <loc>https://leminhviett.github.io/categories/</loc>
