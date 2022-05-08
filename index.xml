@@ -9,7 +9,16 @@
       <link>https://leminhviett.github.io/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 06 May 2022 14:52:19 +0800</lastBuildDate><atom:link href="https://leminhviett.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 08 May 2022 10:15:59 +0800</lastBuildDate><atom:link href="https://leminhviett.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Test_wf</title>
+      <link>https://leminhviett.github.io/posts/test_wf/</link>
+      <pubDate>Sun, 08 May 2022 10:15:59 +0800</pubDate>
+      
+      <guid>https://leminhviett.github.io/posts/test_wf/</guid>
+      <description>Test wf</description>
+    </item>
+    
     <item>
       <title>About me</title>
       <link>https://leminhviett.github.io/posts/about_me/</link>
