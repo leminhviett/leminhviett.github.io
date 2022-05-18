@@ -9,7 +9,97 @@
       <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Fri, 06 May 2022 14:52:19 +0800</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 18 May 2022 09:47:52 +0700</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>The minimum every developer must know about CORS</title>
+      <link>https://vietmle.com/posts/min_cors/</link>
+      <pubDate>Wed, 18 May 2022 09:47:52 +0700</pubDate>
+      
+      <guid>https://vietmle.com/posts/min_cors/</guid>
+      <description>CORS mechanism &amp;amp; examples</description>
+      <content:encoded><![CDATA[<h2 id="what-is-cors">What is CORS?</h2>
+<ul>
+<li><strong>CORS</strong> stands for <strong>Cross-Origin Resource Sharing.</strong></li>
+<li>CORS is <em>HTTP-header based mechanism</em> set by server to inform client side about <em>allowed origins</em> (<code>&lt;scheme&gt;://&lt;hostname&gt;:&lt;port&gt;</code>) other than its own. It also indicates method and headers which the server is willing to support (example included below).</li>
+<li><strong>Most</strong> of client browsers enforce CORS whenever <em>a cross-origin request</em> is made.
+A request is cross-origin if it calls to outside origins, which are different from the one served the first resource.</li>
+</ul>
+<p>CORS behaviour will be different between simple &amp; “pre-flighted” requests. Let’s see the detail below.</p>
+<h3 id="simple-requests">Simple requests</h3>
+<ul>
+<li>
+<p>Refer <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#simple_requests">here</a> for full defition of simple request. For example, a GET request with no header is a simple request.</p>
+</li>
+<li>
+<p>A simple request is sent directly to server.
+Let’s see how it works in the example below:</p>
+<!-- raw HTML omitted -->
+<p>Source: MDN web docs</p>
+<ul>
+<li><strong>Request 1:</strong> Client browser first load a web document from <code>domain-a.com</code> . The main request defines its <code>origin</code> as <code>domain-a.com</code>. This origin is then specified in the request header of subsequent requests.
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span>
+</span></span></code></pre></div></li>
+<li><strong>Request 2:</strong> Client browser then send request to GET resource from <code>domain-a.com</code>. As comming from the same origin, the requested resource is fetched &amp; rendered by browser.</li>
+<li><strong>Request 3:</strong> similar to request 2**,** but the request now is sent to <code>domain-b.com</code> , which is a different origin.
+<ul>
+<li>The resource will be successfully fetched, but &hellip;</li>
+<li>It might be rendered by the browser only if in the response header, the allowed origin == <code>domain-a.com</code> (the request origin) or when it is a wildcard (*) meaning permit all origin.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Access-Control-Allow-Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span> | *
+</span></span></code></pre></div></li>
+</ul>
+</li>
+</ul>
+<h3 id="pre-flighted-requests">“Pre-flighted” requests</h3>
+<ul>
+<li>
+<p>Any requests that are not simple is <strong>“pre-flighted” one</strong>.</p>
+</li>
+<li>
+<p>Unlike simple request, the browser will send a <strong><em>“preflight” request</em></strong> (OPTION method) to see if the actual one (<strong>”pre-flighted” one</strong>) is allowed by the server.</p>
+<!-- raw HTML omitted -->
+<p>Source: MDN web docs</p>
+</li>
+<li>
+<p>A <em>preflight request</em> will include the following headers:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">Access-Control-Request-Method: <span class="p">&lt;</span><span class="nt">method</span><span class="p">&gt;</span>
+</span></span><span class="line"><span class="cl">Access-Control-Request-Headers: <span class="p">&lt;</span><span class="nt">field-name</span><span class="p">&gt;</span>[, <span class="p">&lt;</span><span class="nt">field-name</span><span class="p">&gt;</span>]*
+</span></span></code></pre></div><ul>
+<li>To inform server about method and headers used in the actual request.</li>
+<li>To ask if the server allow client origin with given headers &amp; method.</li>
+</ul>
+</li>
+<li>
+<p>Server responses with the following headers if it supports:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Access-Control-Allow-Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span> | *
+</span></span><span class="line"><span class="cl">Access-Control-Allow-Methods: <span class="p">&lt;</span><span class="nt">method</span><span class="p">&gt;</span>[, <span class="p">&lt;</span><span class="nt">method</span><span class="p">&gt;</span>]*
+</span></span><span class="line"><span class="cl">Access-Control-Allow-Headers: <span class="p">&lt;</span><span class="nt">header-name</span><span class="p">&gt;</span>[, <span class="p">&lt;</span><span class="nt">header-name</span><span class="p">&gt;</span>]*
+</span></span></code></pre></div><p>Indicating origin, method &amp; headers the server supports</p>
+</li>
+<li>
+<p>Then, the browser will compare value in the response header against corresponding info of the actual request. <strong>If all is allowed, the actual request is sent; otherwise, not.</strong></p>
+</li>
+<li>
+<p>The preflight request can also be cached in client side with the time-to-live indicated in <code>Access-Control-Max-Age</code> response header</p>
+</li>
+</ul>
+<h2 id="final-note">Final note</h2>
+<p>CORS is server-side security configurations that <strong>clients may enforce it.</strong></p>
+<ul>
+<li>Most browsers do (to avoid attack like CSRF).</li>
+<li>Some dev tools do not (like Postman).</li>
+</ul>
+<h2 id="further-reading--references">Further reading &amp; references:</h2>
+<p>This article just covers surface of CORS. Further reading is highly recommended!</p>
+<ul>
+<li>Detailed visualization example: <a href="https://www.youtube.com/watch?v=Ka8vG5miErk&amp;t=621s">https://www.youtube.com/watch?v=Ka8vG5miErk&amp;t=621s</a></li>
+<li>Further analysis: <a href="https://www.stackhawk.com/blog/what-is-cors/">https://www.stackhawk.com/blog/what-is-cors/</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</a></li>
+</ul>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>About me</title>
       <link>https://vietmle.com/posts/about_me/</link>
@@ -28,7 +118,7 @@
 <p>As a non-CS degree person, I find it overwhelmed when self-studying to become a software engineer. I was lucky enough to be guided by my senior, since then my studying process is much easier.</p>
 <p>As a result, I start this blog to share my coding journey and hope some of my articles help you in some ways as well.</p>
 <p>Moreover, through this blog, I also hope that I can connect with and learn from new like-minded friends like you.</p>
-<p><em>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</em></p>
+<p>_Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!_</p>
 ]]></content:encoded>
     </item>
     
