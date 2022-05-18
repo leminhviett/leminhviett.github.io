@@ -28,13 +28,13 @@ A request is cross-origin if it calls to outside origins, which are different fr
 <h3 id="simple-requests">Simple requests</h3>
 <ul>
 <li>
-<p>Refer <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#simple_requests">here</a> for full defition of simple request. For example, a GET request with no header is a simple request.</p>
+<p>Refer <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#simple_requests">here</a> for full definition of simple request. For example, a GET request with no header is a simple request.</p>
 </li>
 <li>
 <p>A simple request is sent directly to server.
 Let’s see how it works in the example below:</p>
-<!-- raw HTML omitted -->
-<p>Source: MDN web docs</p>
+<p><img loading="lazy" src="/images/[CORS]simple_request.png" alt="Source: MDN web docs"  />
+</p>
 <ul>
 <li><strong>Request 1:</strong> Client browser first load a web document from <code>domain-a.com</code> . The main request defines its <code>origin</code> as <code>domain-a.com</code>. This origin is then specified in the request header of subsequent requests.
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span>
@@ -57,8 +57,8 @@ Let’s see how it works in the example below:</p>
 </li>
 <li>
 <p>Unlike simple request, the browser will send a <strong><em>“preflight” request</em></strong> (OPTION method) to see if the actual one (<strong>”pre-flighted” one</strong>) is allowed by the server.</p>
-<!-- raw HTML omitted -->
-<p>Source: MDN web docs</p>
+<p><img loading="lazy" src="/images/[CORS]preflighted_request.png" alt="Source: MDN web docs"  />
+</p>
 </li>
 <li>
 <p>A <em>preflight request</em> will include the following headers:</p>
@@ -95,7 +95,7 @@ Let’s see how it works in the example below:</p>
 <ul>
 <li>Detailed visualization example: <a href="https://www.youtube.com/watch?v=Ka8vG5miErk&amp;t=621s">https://www.youtube.com/watch?v=Ka8vG5miErk&amp;t=621s</a></li>
 <li>Further analysis: <a href="https://www.stackhawk.com/blog/what-is-cors/">https://www.stackhawk.com/blog/what-is-cors/</a></li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</a></li>
+<li>Reference: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</a></li>
 </ul>
 ]]></content:encoded>
     </item>
