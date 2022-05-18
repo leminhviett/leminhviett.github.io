@@ -34,7 +34,8 @@ A request is cross-origin if it calls to outside origins, which are different fr
 <p>A simple request is sent directly to server.
 Let’s see how it works in the example below:</p>
 <p><img loading="lazy" src="/images/[CORS]simple_request.png" alt="Source: MDN web docs"  />
-</p>
+
+<em>Source: MDN web docs</em></p>
 <ul>
 <li><strong>Request 1:</strong> Client browser first load a web document from <code>domain-a.com</code> . The main request defines its <code>origin</code> as <code>domain-a.com</code>. This origin is then specified in the request header of subsequent requests.
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span>
@@ -58,7 +59,8 @@ Let’s see how it works in the example below:</p>
 <li>
 <p>Unlike simple request, the browser will send a <strong><em>“preflight” request</em></strong> (OPTION method) to see if the actual one (<strong>”pre-flighted” one</strong>) is allowed by the server.</p>
 <p><img loading="lazy" src="/images/[CORS]preflighted_request.png" alt="Source: MDN web docs"  />
-</p>
+
+<em>Source: MDN web docs</em></p>
 </li>
 <li>
 <p>A <em>preflight request</em> will include the following headers:</p>
@@ -97,6 +99,7 @@ Let’s see how it works in the example below:</p>
 <li>Further analysis: <a href="https://www.stackhawk.com/blog/what-is-cors/">https://www.stackhawk.com/blog/what-is-cors/</a></li>
 <li>Reference: <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS</a></li>
 </ul>
+<p><em>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</em></p>
 ]]></content:encoded>
     </item>
     
@@ -118,7 +121,7 @@ Let’s see how it works in the example below:</p>
 <p>As a non-CS degree person, I find it overwhelmed when self-studying to become a software engineer. I was lucky enough to be guided by my senior, since then my studying process is much easier.</p>
 <p>As a result, I start this blog to share my coding journey and hope some of my articles help you in some ways as well.</p>
 <p>Moreover, through this blog, I also hope that I can connect with and learn from new like-minded friends like you.</p>
-<p>_Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!_</p>
+<p><em>Follow me (<a href="https://twitter.com/vietmle_">@vietmle_</a>) on Twitter to get update whenever my new article is out!</em></p>
 ]]></content:encoded>
     </item>
     
