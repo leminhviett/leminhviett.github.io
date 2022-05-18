@@ -41,7 +41,7 @@ Let’s see how it works in the example below:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="cl">Origin: <span class="p">&lt;</span><span class="nt">origin</span><span class="p">&gt;</span>
 </span></span></code></pre></div></li>
 <li><strong>Request 2:</strong> Client browser then send request to GET resource from <code>domain-a.com</code>. As comming from the same origin, the requested resource is fetched &amp; rendered by browser.</li>
-<li><strong>Request 3:</strong> similar to request 2**,** but the request now is sent to <code>domain-b.com</code> , which is a different origin.
+<li><strong>Request 3:</strong> similar to request 2, but the request now is sent to <code>domain-b.com</code> , which is a different origin.
 <ul>
 <li>The resource will be successfully fetched, but &hellip;</li>
 <li>It might be rendered by the browser only if in the response header, the allowed origin == <code>domain-a.com</code> (the request origin) or when it is a wildcard (*) meaning permit all origin.</li>
