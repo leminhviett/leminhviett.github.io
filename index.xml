@@ -9,7 +9,204 @@
       <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 18 May 2022 09:47:52 +0700</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 25 May 2022 07:45:47 +0700</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Intro to Concurrency in Golang</title>
+      <link>https://vietmle.com/posts/go_conc_intro/</link>
+      <pubDate>Wed, 25 May 2022 07:45:47 +0700</pubDate>
+      
+      <guid>https://vietmle.com/posts/go_conc_intro/</guid>
+      <description>Getting started with concept of channel &amp;amp; goroutine in Golang</description>
+      <content:encoded><![CDATA[<p>When dealing with conccurency problem, it is harder to reason about when moving down the stack of abstraction (machine, process, thread, hardware components, etc). Most programming languages use thread as its highest level of abstraction. Fortunately, Go build on top of that &amp; introduce <strong>Goroutine</strong>.</p>
+<blockquote>
+<p>“Share memory by communicating, don’t communicate by sharing memory.” - One of Go&rsquo;s mottos</p>
+</blockquote>
+<p>Although Golang provides traditional locking mechanism in <code>sync</code> package, its philosophy prefers “share memory by communicating”. Therefore, Golang introduces <strong>channel</strong> as the medium for <strong>Goroutines</strong> to communicate with each other.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">	<span class="c1">// do some work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">dataStream</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span></code></pre></div><h2 id="fork-join-model">Fork-join model</h2>
+<p><img loading="lazy" src="/images/Go_con_model.png" alt="Fork-join concurrency model that Go follows"  />
+
+<em>Fork-join concurrency model that Go follows</em></p>
+<p>This concurrency model is used in Golang. At anytime; a child Goroutine can be <em>fork</em>  to do concurrent work with its parent &amp; then will <em>join</em> back **at some point.</p>
+<p>Every Go program has <em>a main Goroutine</em>. The main one can be exit earlier than its children; as a result, a join point is needed to make sure children Goroutine has chance to finish.</p>
+<h2 id="channel">Channel</h2>
+<p>Channel holds the following properties:</p>
+<ul>
+<li>Goroutine-safe (Multiple Goroutines can access to shared channel without race condition)</li>
+<li>FIFO queue semantics</li>
+</ul>
+<p>Channel always return 2 value: 1 is object returned, 1 is status (<code>true</code> means valid object, <code>false</code> means no more values will be sent in this channel)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">intStream</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nb">close</span><span class="p">(</span><span class="nx">intStream</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">integer</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span> <span class="nx">intStream</span> 
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;(%v): %v&#34;</span><span class="p">,</span> <span class="nx">ok</span><span class="p">,</span> <span class="nx">integer</span><span class="p">)</span> <span class="c1">// (false): 0
+</span></span></span></code></pre></div><h3 id="channel-direction">Channel direction</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">dataStream</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> <span class="c1">//read from only channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">dataStream</span> <span class="kd">chan</span><span class="o">&lt;-</span> <span class="kd">interface</span><span class="p">{}</span> <span class="c1">// write to only channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">dataStream</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> <span class="c1">// 2 ways
+</span></span></span></code></pre></div><h3 id="channel-capacity">Channel capacity</h3>
+<p>Default capacity of a channel is 0 (unbuffered channel). Reading from empty or writing to full channel is blocking.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="c1">//buffered size of 10
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="c1">//unbuffered channel
+</span></span></span></code></pre></div><blockquote>
+<p>if a buffered channel is empty and has a receiver, the buffer will be bypassed and the value will <em>be passed directly from the sender to the receiver.</em></p>
+</blockquote>
+<h3 id="channel-behavior-against-goroutine">Channel behavior against Goroutine</h3>
+<p>When a Goroutine read from or write to a channel, various of behaviours might happen depending on channel state.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">intStream</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="c1">// 0 capacity channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">intStream</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">i</span><span class="o">:=</span><span class="mi">1</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;=</span><span class="mi">5</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	  <span class="nx">intStream</span> <span class="o">&lt;-</span> <span class="nx">i</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//range from a channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span> <span class="nx">integer</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">intStream</span> <span class="p">{</span> <span class="c1">// always blocked until the channel is closed
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;%v &#34;</span><span class="p">,</span> <span class="nx">integer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Below table summarizes all the behaviour:</p>
+<table>
+<thead>
+<tr>
+<th>Operations</th>
+<th>Channel state</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read</td>
+<td>nil</td>
+<td>Block</td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; not empty</td>
+<td>Value</td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; empyt</td>
+<td>Block</td>
+</tr>
+<tr>
+<td></td>
+<td>Closed</td>
+<td>[default value], <code>false</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Write only</td>
+<td>Compile error</td>
+</tr>
+<tr>
+<td>Write</td>
+<td>nil</td>
+<td>Block</td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; full</td>
+<td>Block</td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; not full</td>
+<td>Write value</td>
+</tr>
+<tr>
+<td></td>
+<td>Closed</td>
+<td><code>panic</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Receive only</td>
+<td>Compile error</td>
+</tr>
+<tr>
+<td>close</td>
+<td>nil</td>
+<td><code>panic</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; not empty</td>
+<td>Closes channel. Subsequent reads succeed value until channel is empty, then it reads deafult value.</td>
+</tr>
+<tr>
+<td></td>
+<td>Open &amp; empty</td>
+<td>Closes channel. Reads produces default value.</td>
+</tr>
+<tr>
+<td></td>
+<td>Closed</td>
+<td><code>panic</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Receive only</td>
+<td>Compile Error</td>
+</tr>
+</tbody>
+</table>
+<p>As the behaviour is clomplex, we should have a way to make a robust and scalable program.</p>
+<h2 id="robust--scalable-way-when-working-with-channel">Robust &amp; scalable way when working with channel</h2>
+<p>Here is 1 suggestion way:</p>
+<ul>
+<li>At most 1 Goroutine have the ownership of a channel. The channel ownership should be small to be managable.</li>
+<li>Channel owner have a write-access (<code>chan←</code>);</li>
+<li>While consumer only have read-only view (<code>←chan</code>).</li>
+</ul>
+<ol>
+<li>
+<p><strong>Channel owners</strong></p>
+<p>Responsibilities:</p>
+<ul>
+<li><strong>Init</strong> channel</li>
+<li>Do <strong>write</strong> to channel or <strong>pass ownership</strong> to another goroutine</li>
+<li><strong>Close</strong> channel</li>
+<li>Encapsulate &amp; expose channel as a reader channel</li>
+</ul>
+</li>
+<li>
+<p><strong>Channel</strong> <strong>consumer</strong></p>
+<p>Responsibilites:</p>
+<ul>
+<li>Handle when channel is closed</li>
+<li>Handle blocking behaviour when reading from channel</li>
+</ul>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">chanOwner</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">()</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">int</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">	<span class="nx">resultStream</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1">//init
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">resultStream</span><span class="p">)</span> <span class="c1">// close
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="nx">i</span><span class="o">:=</span><span class="mi">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;=</span><span class="mi">5</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">{</span> 
+</span></span><span class="line"><span class="cl">			<span class="nx">resultStream</span> <span class="o">&lt;-</span> <span class="nx">i</span> <span class="c1">// write
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">}</span> <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">resultStream</span> <span class="c1">// read channel returned
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">resultStream</span> <span class="o">:=</span> <span class="nf">chanOwner</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="nx">result</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">resultStream</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Received: %d\n&#34;</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Done receiving!&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p><strong>Refereneces:</strong></p>
+<p>Concurrency in Go: Tools and Techniques for Developers - Book by Katherine Cox-Buday</p>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>The minimum every developer must know about CORS</title>
       <link>https://vietmle.com/posts/min_cors/</link>
