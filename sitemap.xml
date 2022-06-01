@@ -2,28 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://vietmle.com/posts/5_con_patterns_go/</loc>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
+  </url><url>
     <loc>https://vietmle.com/tags/concurrency/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/series/concurrency-in-golang/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/tags/golang/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
-  </url><url>
-    <loc>https://vietmle.com/posts/go_conc_intro/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/posts/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/series/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/tags/</loc>
-    <lastmod>2022-05-25T07:45:47+07:00</lastmod>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/</loc>
+    <lastmod>2022-06-01T07:45:47+07:00</lastmod>
+  </url><url>
+    <loc>https://vietmle.com/posts/go_conc_intro/</loc>
     <lastmod>2022-05-25T07:45:47+07:00</lastmod>
   </url><url>
     <loc>https://vietmle.com/posts/min_cors/</loc>

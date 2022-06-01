@@ -9,7 +9,171 @@
       <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 25 May 2022 07:45:47 +0700</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 01 Jun 2022 07:45:47 +0700</lastBuildDate><atom:link href="https://vietmle.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>5 concurrency patterns in Golang</title>
+      <link>https://vietmle.com/posts/5_con_patterns_go/</link>
+      <pubDate>Wed, 01 Jun 2022 07:45:47 +0700</pubDate>
+      
+      <guid>https://vietmle.com/posts/5_con_patterns_go/</guid>
+      <description>5 simple, yet powerful, concurrency patterns in Golang</description>
+      <content:encoded><![CDATA[<p>This article will cover 5 simple concurrency patterns which are often used in Golang</p>
+<h2 id="1-for-select-pattern">1. <code>for-select</code> pattern</h2>
+<p>This is a fundamental pattern. It is typically used to read data from multiple channels.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">var</span> <span class="nx">c1</span><span class="p">,</span> <span class="nx">c2</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kt">int</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">{</span> <span class="c1">// Either loop infinitely or range over something 
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">c1</span><span class="p">:</span> <span class="c1">// Do some work with channels
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">c2</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">default</span><span class="p">:</span> <span class="c1">// auto run if other cases are not ready
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// do some work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></div><p>The select statement looks like switch one, but its behavior is different. All <code>cases</code> are considered simultaneously &amp; have <strong>equal chance</strong> to be selected. If none of the <code>cases</code> are ready to run, the entire <code>select</code> statement blocks.</p>
+<h2 id="2-done-channel-pattern">2. <code>done</code> channel pattern</h2>
+<p>Goroutine is not garbage collected; hence, it is likely to be leaked.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// &lt;operation that will block forever&gt;
+</span></span></span><span class="line"><span class="cl"><span class="c1">// =&gt; Go routine leaks
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}()</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// Do work
+</span></span></span></code></pre></div><p>To avoid leaking, Goroutine should be cancelled whenever it is told to do. A parent Goroutine needs to send cancellation signal to its child via a <em>read-only</em> channel named <code>done</code> . By convention, it is set as the 1st parameter.</p>
+<p>This pattern is also utilized a lot in other patterns.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">//child goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">doWork</span><span class="p">(</span><span class="o">&lt;-</span><span class="nx">done</span> <span class="kd">chan</span> <span class="kd">interface</span> <span class="p">{},</span> <span class="nx">other_params</span><span class="p">)</span> <span class="o">&lt;-</span> <span class="nx">terminated</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">terminated</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span> <span class="c1">// to tell outer that it has finished
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">terminated</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">select</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span><span class="p">:</span> <span class="c1">//do your work here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">done</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// do work here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">terminated</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// parent goroutine
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">done</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl"><span class="nx">terminated</span> <span class="o">:=</span> <span class="nf">doWork</span><span class="p">(</span><span class="nx">done</span><span class="p">,</span> <span class="nx">other_args</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// do sth
+</span></span></span><span class="line"><span class="cl"><span class="c1">// then tell child to stop
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nf">close</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// wait for child finish its work
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">&lt;-</span> <span class="nx">terminated</span>
+</span></span></code></pre></div><h2 id="3-or-channel-pattern">3. <code>or-channel</code> pattern</h2>
+<p>This pattern aims to combine multiple <code>done</code> channels into one <code>agg_done</code>; it means that if one of a <code>done</code> channel is signaled, the whole <code>agg_done</code> channel is also closed. Yet, we do not know number of <code>done</code> channels during runtime in advanced.</p>
+<p><code>or-channel</code> pattern can do so by using <code>goroutine</code> &amp; <code>recursion</code> .</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// return agg_done channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">or</span> <span class="kd">func</span><span class="p">(</span><span class="nx">channels</span> <span class="o">...</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">or</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">channels</span> <span class="o">...&lt;-</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span> <span class="o">&lt;-</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// base cases
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">switch</span> <span class="nb">len</span><span class="p">(</span><span class="nx">channels</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">        <span class="k">case</span> <span class="mi">1</span><span class="p">:</span> <span class="k">return</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nx">orDone</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">orDone</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">switch</span> <span class="nb">len</span><span class="p">(</span><span class="nx">channels</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="mi">2</span><span class="p">:</span> 
+</span></span><span class="line"><span class="cl">                <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">default</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">channels</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">case</span> <span class="o">&lt;-</span> <span class="nf">or</span><span class="p">(</span><span class="nb">append</span><span class="p">(</span><span class="nx">channels</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span> <span class="nx">orDone</span><span class="p">)</span><span class="o">...</span><span class="p">):</span> <span class="c1">// * line
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">orDone</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>*** line** makes the upper &amp; lower recursive function depends on each other like a tree. The upper injects its own <code>orDone</code> channel into the lower. Then the lower also return its own <code>orDone</code> to the upper.</p>
+<p>If any <code>orDone</code> channel closes, the upper &amp; lower both are notified.</p>
+<h2 id="4-tee-channel-pattern">4. <code>tee</code> channel pattern</h2>
+<p>This pattern aims to split values coming from a channel into 2 others. So that we can dispatch them into two separate areas of our codebase.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">tee</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">done</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">in</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="p">(</span><span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">,</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">out1</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">out2</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">out1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">out2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">//shadow outer variable
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kd">var</span> <span class="nx">out1</span><span class="p">,</span> <span class="nx">out2</span> <span class="p">=</span> <span class="nx">out1</span><span class="p">,</span> <span class="nx">out2</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="nx">val</span> <span class="o">:=</span> <span class="k">range</span> <span class="nf">orDone</span><span class="p">(</span><span class="nx">done</span><span class="p">,</span> <span class="nx">in</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">2</span><span class="p">;</span> <span class="nx">i</span> <span class="o">++</span> <span class="p">{</span> <span class="c1">//make sure 2 channels received same value
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">done</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">case</span> <span class="nx">out1</span><span class="o">&lt;-</span> <span class="nx">val</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="nx">out1</span> <span class="p">=</span> <span class="kc">nil</span> <span class="c1">//stop this channel from being received
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">case</span> <span class="nx">out2</span><span class="o">&lt;-</span><span class="nx">val</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                    <span class="nx">out2</span> <span class="p">=</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">out1</span><span class="p">,</span> <span class="nx">out2</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="5-bridge-channel-pattern">5. <code>bridge</code> channel pattern</h2>
+<p>Reading values from channel of channels (<code>&lt;-chan &lt;-chan interface{}</code>) can be cumbersome. Hence, this pattern aims to merge all values into 1 channel, so that the consumer jobs is much easier.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">bridge</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">done</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">chanStream</span> <span class="o">&lt;-</span> <span class="o">&lt;-</span> <span class="kd">interface</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">valStream</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">interface</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">defer</span> <span class="nb">close</span><span class="p">(</span><span class="nx">valStream</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kd">var</span> <span class="nx">stream</span> <span class="o">&lt;-</span> <span class="kd">chan</span> <span class="kd">interface</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">select</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="nx">maybeStream</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="o">&lt;-</span><span class="nx">chanStream</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="nx">ok</span> <span class="o">==</span> <span class="kc">false</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">return</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="nx">stream</span> <span class="p">=</span> <span class="nx">maybeStream</span>
+</span></span><span class="line"><span class="cl">            <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">done</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="nx">val</span> <span class="o">:=</span> <span class="k">range</span> <span class="nf">orDone</span><span class="p">(</span><span class="nx">done</span><span class="p">,</span> <span class="nx">stream</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">                <span class="k">select</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">case</span> <span class="nx">valStream</span> <span class="o">&lt;-</span> <span class="nx">val</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">case</span> <span class="o">&lt;-</span> <span class="nx">done</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">valStream</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>References:</strong></p>
+<p>Concurrency in Go: Tools and Techniques for Developers - Book by Katherine Cox-Buday</p>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>Intro to Concurrency in Golang</title>
       <link>https://vietmle.com/posts/go_conc_intro/</link>
