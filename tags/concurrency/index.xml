@@ -9,7 +9,125 @@
       <link>https://vietmle.com/%3Clink%20or%20path%20of%20image%20for%20opengraph,%20twitter-cards%3E</link>
     </image>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Wed, 01 Jun 2022 07:45:47 +0700</lastBuildDate><atom:link href="https://vietmle.com/tags/concurrency/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 08 Jun 2022 07:45:47 +0700</lastBuildDate><atom:link href="https://vietmle.com/tags/concurrency/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>4 Concurrency Primitives Comparisons</title>
+      <link>https://vietmle.com/posts/concurency_sync_comparison/</link>
+      <pubDate>Wed, 08 Jun 2022 07:45:47 +0700</pubDate>
+      
+      <guid>https://vietmle.com/posts/concurency_sync_comparison/</guid>
+      <description>Quick comparison between: spin lock, mutex, semaphore, condition variable</description>
+      <content:encoded><![CDATA[<p>This short article will cover comparisons between some popular concurrency primitives used when multiple threads access to shared memomory.</p>
+<p>The disscussion order will go from low-level to high-level primitive, specifically: spin lock, mutex, semaphore, condition variable. The higher level is typically built on top of the lower one.</p>
+<h2 id="pre-requisite">Pre-requisite</h2>
+<p>This is not a beginner post you should have some background knowledge about these aforementioned stuff.</p>
+<h2 id="spin-lock">Spin lock</h2>
+<ul>
+<li>
+<p><strong>Definition</strong></p>
+<p>Any locking solutions require threads to do busy waiting when acquiring locks is a spin lock.</p>
+<p>This can be implemented with <code>test&amp;set()</code> - operation supported by hardware.</p>
+</li>
+<li>
+<p><strong>Usage</strong></p>
+<p>It is used to ensure mutual exclusion based on <em><strong>ownership mechanism</strong></em> (which means a lock can only be acquired &amp; released by same thread).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Typical usage:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span> <span class="c1">// busy waiting here if lock is acquired
+</span></span></span><span class="line"><span class="cl"><span class="c1">// critical section
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Pros &amp; Cons</strong></p>
+<p>❌ Idle waiting wastes CPU cycle for nothing</p>
+</li>
+</ul>
+<h2 id="standard-mutex">Standard Mutex</h2>
+<ul>
+<li>
+<p><strong>Definition</strong></p>
+<p>It is aka Sleeping Lock. When acquiring this type, threads will wait by being put into <code>sleep()</code> in a <code>thread_queue</code>. Runtime system will wake-up threads when the lock is ready.</p>
+</li>
+<li>
+<p><strong>Usage</strong></p>
+<p>Like Spin lock, with ownership mechanism, it is also used to achieve mutual exclusion.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Typical usage:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span> <span class="c1">// sleep in a queue if lock is acquired
+</span></span></span><span class="line"><span class="cl"><span class="c1">// critical section
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Pros &amp; Cons</strong></p>
+<p>✅ This type of lock releases CPU for other tasks.
+❌ However, <code>sleep</code> &amp; <code>wake_up</code> thread operation involves context switching which needs CPU usage as well.</p>
+</li>
+</ul>
+<p>Choosing between spin lock &amp; mutex is an open-ended question. Yet, a rule of thumb is that if waiting time is short, spin lock is better; if waiting time is long, mutex is better</p>
+<h2 id="semaphore">Semaphore</h2>
+<ul>
+<li>
+<p><strong>Definition</strong></p>
+<p>Semaphore is a variable protected by a sleeping lock. There are 2 types of semaphore: binary &amp; counting.</p>
+</li>
+<li>
+<p><strong>Usage</strong></p>
+<p>Unlike mutex &amp; spin lock, semaphore uses <em><strong>signalling mechanism</strong></em> and used for synchronization purpose. Typical useacase is that one task waits to be notified by another before it starts.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Typical usage:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">s</span> <span class="o">=</span> <span class="n">semaphore</span><span class="p">(</span><span class="n">counter_val</span><span class="p">,</span> <span class="n">lock</span><span class="p">)</span> <span class="c1">// init semaphore
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">// counter_val --, sleep in queue if another thread currently hold lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">wait</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// do sth ....
+</span></span></span><span class="line"><span class="cl"><span class="c1">// ....
+</span></span></span><span class="line"><span class="cl"><span class="c1">// counter_val ++, sleep in queue another thread currently hold lock
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">signal</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> 
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Pros &amp; Cons</strong></p>
+<p>❌  As lacking of ownership, any thread can call <code>signal()</code> &amp; <code>wait()</code> operation. As a result, many inherent dangers are associated with using semaphore:</p>
+<ul>
+<li>Accidental <code>signal()</code> without <code>wait()</code></li>
+<li>Deadlock</li>
+<li>… many more</li>
+</ul>
+</li>
+</ul>
+<h2 id="condition-variable">Condition variable</h2>
+<ul>
+<li>
+<p><strong>Definition</strong></p>
+<p>It is kind of “higher-level semaphore”.</p>
+<p>Specifically, it manages a queue of threads waiting for some condition states to be met. Condition states and the queue are both protected by a lock.</p>
+<p>Multiple condtion variables can share a same lock. But vice versa is not correct</p>
+</li>
+<li>
+<p><strong>Usage</strong></p>
+<p>Similar to semaphore, it also uses <em><strong>signalling mechanism</strong></em> and used for synchronization purpose.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// Typical usage:
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">cv</span><span class="p">(</span><span class="n">state_var</span><span class="p">,</span> <span class="n">lock</span><span class="p">)</span> <span class="c1">//init condition variable
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">lock</span><span class="p">.</span><span class="n">acquire</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">while</span> <span class="p">(</span><span class="n">some</span> <span class="n">condition</span> <span class="n">related</span> <span class="n">to</span> <span class="n">state_var</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">	<span class="n">cv</span><span class="p">.</span><span class="n">wait</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//Do some work here....
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">cv</span><span class="p">.</span><span class="n">signal</span><span class="p">()</span> <span class="c1">// signal other threads after finishing
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">lock</span><span class="p">.</span><span class="n">release</span><span class="p">()</span>
+</span></span></code></pre></div></li>
+</ul>
+<h2 id="references">References:</h2>
+<ul>
+<li>Detail analysis between semaphore vs mutex: <a href="https://blog.feabhas.com/2009/09/mutex-vs-semaphores-%e2%80%93-part-1-semaphores/">https://blog.feabhas.com/2009/09/mutex-vs-semaphores-–-part-1-semaphores/</a></li>
+<li>Implementation of semaphore &amp; CV: <a href="https://people.eecs.berkeley.edu/~kubitron/courses/cs162-F10/hand-outs/synch.html">https://people.eecs.berkeley.edu/~kubitron/courses/cs162-F10/hand-outs/synch.html</a></li>
+</ul>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>5 concurrency patterns in Golang</title>
       <link>https://vietmle.com/posts/5_con_patterns_go/</link>
